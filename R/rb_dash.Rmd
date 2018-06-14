@@ -41,7 +41,7 @@ Workshops <- tibble(Time = rep(resbaz$Time, 2), workshop = c(resbaz$Day1WS, resb
 
 p1<- Workshops %>% ggplot(aes(workshop, fill = workshop)) + geom_bar() + theme_bw() + theme(axis.text.x = element_text(angle = 60, hjust = 1)) + geom_hline(yintercept = 60) + geom_hline(yintercept = 40, lty= 'dashed') + theme(axis.text.x = element_blank(), legend.position = "bottom", legend.title = element_blank()) +  geom_text(aes(label=..count..),stat="count", position=position_dodge(0.9),vjust=-0.2) + facet_grid(day~.) + guides(fill = guide_legend(ncol = 3,nrow = 3, title.position = 'top'))
 
-p2 <- Workshops %>% filter(workshop != "I will not be attending the workshops") %>% group_by(day) %>% tally()%>% ggplot(., aes(x = day, y = n, fill = factor(day))) + geom_bar(stat = 'identity') + theme_bw() + geom_hline(yintercept = 140, colour = "red") + theme( axis.ticks.x = element_blank(), legend.position = 'none') + geom_text(aes(label = n, y=n),stat="identity", position=position_dodge(0.9),vjust=-0.2)
+p2 <- Workshops %>% filter(workshop != "I will not be attending the workshops") %>% group_by(day) %>% tally()%>% ggplot(., aes(x = factor(day), y = n, fill = factor(day))) + geom_bar(stat = 'identity') + theme_bw() + geom_hline(yintercept = 140, colour = "red") + theme( axis.ticks.x = element_blank(), legend.position = 'none') + geom_text(aes(label = n, y=n),stat="identity", position=position_dodge(0.9),vjust=-0.2)
 
 cowplot::plot_grid(p1,p2, ncol = 1, rel_heights = c(3,1))
 ```
@@ -49,21 +49,21 @@ cowplot::plot_grid(p1,p2, ncol = 1, rel_heights = c(3,1))
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Total Registrants Remaining - Workshops
+### Total Registrants - Workshops (day 1 = `r Workshops %>% filter(workshop != "I will not be attending the workshops") %>% group_by(day) %>% tally() %>% filter(day == 1) %>% pull(n)`, day 2 = `r Workshops %>% filter(workshop != "I will not be attending the workshops") %>% group_by(day) %>% tally() %>% filter(day == 2) %>% pull(n)`)
 
 ```{r}
 
 
 
-p2 <- Workshops %>% mutate(date = lubridate::mdy_hms(Time), attend = 1)  %>% group_by(day, workshop) %>% mutate(remain = 60 - cumsum(attend)+1)%>% ggplot(., aes(x = date,y = remain, by = workshop, colour = workshop)) + geom_line() +  theme_bw() + geom_hline(yintercept = 60, colour = "red") + scale_y_continuous(limits = c(0, 60)) + facet_grid(day~.) + geom_hline(yintercept = 20, lty = 'dashed')
+p2 <- Workshops %>% mutate(date = lubridate::mdy_hms(Time), attend = 1)  %>% group_by(day, workshop) %>% mutate(remain = 60 - cumsum(attend)+1, sum_attend = cumsum(attend))%>% ggplot(., aes(x = date,y = sum_attend, by = workshop, colour = workshop)) + geom_line() +  theme_bw() + geom_hline(yintercept = 60, colour = "red") + scale_y_continuous(limits = c(0, 60)) + facet_grid(day~.) + geom_hline(yintercept = 40, lty = 'dashed')
 
 p2
 ```
 
-### Attend Talks Spots Remaining
+### Attend Talks (n = `r resbaz %>% mutate(attend = if_else(Talks == "I will attend the talks/demonstrations on July 6 .", 1, 0)) %>% summarise(sum(attend))`)
 
 ```{r}
-resbaz %>% mutate(attend = if_else(Talks == "I will attend the talks/demonstrations on July 6 .", 1, 0)) %>% mutate(date = lubridate::mdy_hms(Time)) %>% mutate(remain = 400 - cumsum(attend)+1)%>% ggplot(., aes(x = date,y = remain)) + geom_line() +  theme_bw() + geom_hline(yintercept = 400, colour = "red") + scale_y_continuous(limits = c(0, 400))
+resbaz %>% mutate(attend = if_else(Talks == "I will attend the talks/demonstrations on July 6 .", 1, 0)) %>% mutate(date = lubridate::mdy_hms(Time)) %>% mutate(remain = 400 - cumsum(attend)+1)%>% ggplot(., aes(x = date,y = remain)) + geom_line(lty = "dashed") + geom_line(aes(y = cumsum(attend))) +  theme_bw() + geom_hline(yintercept = 400, colour = "red") + scale_y_continuous(limits = c(0, 400))
 ```
 
 Breakdowns
