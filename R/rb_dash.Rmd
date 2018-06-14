@@ -1,0 +1,57 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(here)
+library(googlesheets)
+library(knitr) # brings kable() into namespace
+library(kableExtra)
+library(dplyr)
+library(ggplot2)
+library(scales)
+```
+
+
+```{r, include = FALSE}
+gs_auth(token = here::here("googlesheets_token.rds"))
+gs_ls()
+resbaz_url <- "https://docs.google.com/spreadsheets/d/1gSHnIzLs3gWXVGrIYrCpzqrCMAODYauada1xjeYhdxU"
+(resbaz_sheet_info <- gs_url(resbaz_url))
+resbaz <- gs_read(resbaz_sheet_info) %>% select(-2,-3)
+names(resbaz) <-c("Time", "Institution", "Dept","Gender","Age","Career","Discipline","Day1WS", "Talks","Dietary","Capacity","Contact", "Day2WS")
+```
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+Workshops <- c(resbaz$Day1WS, resbaz$Day2WS)
+Workshops <-Workshops[Workshops != "I will not be attending the workshops"]
+
+tibble(Workshops) %>% ggplot(aes(Workshops, fill = Workshops)) + geom_bar() + theme_bw() + theme(axis.text.x = element_text(angle = 60, hjust = 1)) + geom_hline(yintercept = 60) + geom_hline(yintercept = 40, lty= 'dashed') + theme(axis.text.x = element_blank(), legend.position = "bottom")
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Registrants
+
+```{r}
+resbaz %>% mutate(n = 1) %>% ggplot(., aes(n), fill = n) + geom_bar(aes( y = (..count..)/120)) + scale_y_continuous(limits = c(0,1), labels = percent_format(), name = "Percent Total") + theme_bw() + geom_hline(yintercept = 1, colour = "red") + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+```
+
+### Attend Talks
+
+```{r}
+resbaz %>% mutate(attend = if_else(Talks == "I will attend the talks/demonstrations on July 6 .", TRUE, FALSE))%>% ggplot(., aes(attend, fill = attend)) + geom_bar(aes( y = (..count..)/400)) + scale_y_continuous(limits = c(0,1), labels = percent_format(), name = "Percent Total") + theme_bw() + geom_hline(yintercept = 1, colour = "red") + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+```
+
