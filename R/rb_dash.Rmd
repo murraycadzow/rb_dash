@@ -27,13 +27,13 @@ resbaz <- gs_read(resbaz_sheet_info) %>% select(-2,-3)
 names(resbaz) <-c("Time", "Institution", "Dept","Gender","Age","Career","Discipline","Day1WS", "Talks","Dietary","Capacity","Contact", "Day2WS")
 ```
 
-Pure Numbers
+Resbaz Numbers
 =====================================
 
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### Chart A
+### Workshop choice by day
 
 ```{r}
 Workshops <- tibble(Time = rep(resbaz$Time, 2), workshop = c(resbaz$Day1WS, resbaz$Day2WS), day = c(rep(1,length(resbaz$Day1WS) ), rep(2, length(resbaz$Day2WS))))
@@ -66,20 +66,38 @@ p2
 resbaz %>% mutate(attend = if_else(Talks == "I will attend the talks/demonstrations on July 6 .", 1, 0)) %>% mutate(date = lubridate::mdy_hms(Time)) %>% mutate(remain = 400 - cumsum(attend)+1)%>% ggplot(., aes(x = date,y = remain)) + geom_line(lty = "dashed") + geom_line(aes(y = cumsum(attend))) +  theme_bw() + geom_hline(yintercept = 400, colour = "red") + scale_y_continuous(limits = c(0, 400))
 ```
 
-Breakdowns
+Backgrounds
 ==================
 
 Column {data-width=650}
 -----------------------------------------------------------------------
 
+### Discipline
+
 ```{r}
-resbaz %>% ggplot(., aes(x = Discipline, fill = Discipline)) + geom_bar() + theme_bw()+ theme(axis.text.x = element_blank())
+resbaz %>% ggplot(., aes(x = Discipline, fill = Discipline)) + geom_bar() + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = 'bottom') + guides(fill = guide_legend(ncol = 2,nrow = 4, title.position = 'top'))
 ```
+
+### Career Stage
+
+```{r, fig.width=6}
+resbaz %>% ggplot(., aes(x = Career, fill = Career)) + geom_bar() + theme_bw()+ theme(axis.text.x = element_blank(),legend.position = 'bottom') + guides(fill = guide_legend(ncol = 2,nrow = 4, title.position = 'top'))
+```
+
+
+Column {data-width=350}
+-----------------------------
 
 ### Age
 
 ```{r}
 resbaz %>% ggplot(., aes(x = Age, fill = Age)) + geom_bar() + theme_bw()
+```
+
+### Gender
+
+```{r}
+resbaz %>% ggplot(., aes(x = Gender, fill = Gender)) + geom_bar() + theme_bw() + theme(legend.position = 'none')
 ```
 
 
