@@ -106,3 +106,11 @@ words <- stringr::str_split(resbaz$Dept, " ") %>% purrr::flatten_chr() %>% uniqu
 words <- words[!words %in% c("of", "&", "and", "school", 'dunedin', 'services', "department" ) ]
 ```
 
+Food
+==================
+
+```{r}
+exclude <- c("No", "None.", "Lots of food")
+resbaz %>% filter(!Dietary %in% exclude, !is.na(Dietary), !purrr::map_lgl(Talks, ~stringr::str_detect(string = .x, "not"))) %>% group_by(Dietary) %>% tally()
+```
+
